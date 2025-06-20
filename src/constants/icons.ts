@@ -6,4 +6,5 @@ export enum Icons {
   Warning = 'warning',
   Rarime = 'rarime',
   QrCodeLine = 'qr-code-line',
+  ResetLeftLine = 'reset-left-line',
 }

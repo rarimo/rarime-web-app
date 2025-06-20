@@ -1,13 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Button, FormControl, Stack } from '@mui/material'
+import { Button, FormControl, IconButton, Stack, Tooltip } from '@mui/material'
 import { ZkPassport } from '@rarimo/zk-passport'
 import { useCallback, useState } from 'react'
-import { SubmitHandler, useForm } from 'react-hook-form'
+import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { config } from '@/config'
+import { countries } from '@/constants/countries'
+import { Icons } from '@/constants/icons'
 import { ErrorHandler } from '@/services/error-handler'
-import { UiSwitch, UiTextField } from '@/ui'
+import { UiIcon, UiSelect, UiSwitch, UiTextField } from '@/ui'
 
 import StepView from './StepView'
 
@@ -31,14 +33,20 @@ export default function ProofAttributesStep({
   onSubmit: (verificationLink: string) => void
 }) {
   const [isFormDisabled, setIsFormDisabled] = useState(false)
-  const { formState, register, handleSubmit } = useForm({
+
+  const generateRandomEventId = useCallback(() => {
+    // string of 20 random digits
+    return Array.from({ length: 20 }, () => Math.floor(Math.random() * 10)).join('')
+  }, [])
+
+  const { formState, control, register, handleSubmit, setValue } = useForm({
     mode: 'onTouched',
     defaultValues: {
       uniqueness: false,
       minimumAge: 18,
-      nationality: 'UKR',
+      nationality: '',
       nationalityCheck: false,
-      eventId: '12345678900987654321',
+      eventId: generateRandomEventId(),
     },
     resolver: zodResolver(formSchema),
   })
@@ -75,36 +83,61 @@ export default function ProofAttributesStep({
         <FormControl>
           <UiSwitch
             {...register('nationalityCheck')}
-            label='Nationality Check'
+            label='Reveal Nationality'
             disabled={isFormDisabled}
           />
         </FormControl>
 
-        <Stack direction='row' spacing={4}>
-          <FormControl>
-            <UiTextField
-              {...register('minimumAge', { valueAsNumber: true })}
-              type='number'
-              label='Minimum Age'
-              errorMessage={formState.errors.minimumAge?.message}
-              disabled={isFormDisabled}
-            />
-          </FormControl>
-          <FormControl>
-            <UiTextField
-              {...register('nationality')}
+        <FormControl>
+          <UiTextField
+            {...register('minimumAge', { valueAsNumber: true })}
+            type='number'
+            label='Minimum Age'
+            errorMessage={formState.errors.minimumAge?.message}
+            disabled={isFormDisabled}
+          />
+        </FormControl>
+
+        <Controller
+          name='nationality'
+          control={control}
+          render={({ field }) => (
+            <UiSelect
+              {...field}
+              native
               label='Nationality'
-              placeholder='3-letter ISO code'
+              options={[
+                { value: '', label: 'Select your country' },
+                ...countries.map(country => ({
+                  value: country.code,
+                  label: `${country.name} ${country.flag}`,
+                })),
+              ]}
               errorMessage={formState.errors.nationality?.message}
               disabled={isFormDisabled}
             />
-          </FormControl>
-        </Stack>
+          )}
+        />
+
         <FormControl>
           <UiTextField
             {...register('eventId')}
             label='Event ID'
             placeholder=''
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <Tooltip enterDelay={300} title='Generate random event ID'>
+                    <IconButton
+                      color='secondary'
+                      onClick={() => setValue('eventId', generateRandomEventId())}
+                    >
+                      <UiIcon name={Icons.ResetLeftLine} size={5} />
+                    </IconButton>
+                  </Tooltip>
+                ),
+              },
+            }}
             errorMessage={formState.errors.eventId?.message}
             disabled={isFormDisabled}
           />
