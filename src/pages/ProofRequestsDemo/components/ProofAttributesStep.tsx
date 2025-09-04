@@ -35,8 +35,11 @@ export default function ProofAttributesStep({
   const [isFormDisabled, setIsFormDisabled] = useState(false)
 
   const generateRandomEventId = useCallback(() => {
-    // string of 20 random digits
-    return Array.from({ length: 20 }, () => Math.floor(Math.random() * 10)).join('')
+    // string of 20 random digits but not started from 0
+    return (
+      (Math.floor(Math.random() * 9) + 1).toString() +
+      Array.from({ length: 19 }, () => Math.floor(Math.random() * 10)).join('')
+    )
   }, [])
 
   const { formState, control, register, handleSubmit, setValue } = useForm({

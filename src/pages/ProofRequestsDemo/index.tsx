@@ -17,11 +17,11 @@ enum DemoStep {
 }
 
 const zkPassport = new ZkPassport(config.API_URL)
-const userId = uuid()
 
 export default function ProofRequestsDemo() {
   const [verificationLink, setVerificationLink] = useState('')
   const [step, setStep] = useState<DemoStep>(DemoStep.Intro)
+  const [userId, setUserId] = useState<string>(uuid().toString())
   const pollInterval = useRef<number>(-1)
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>('not_verified')
 
@@ -71,6 +71,7 @@ export default function ProofRequestsDemo() {
           status={verificationStatus}
           onRetry={() => {
             setVerificationStatus('not_verified')
+            setUserId(uuid().toString())
             setVerificationLink('')
             setStep(DemoStep.Intro)
           }}
