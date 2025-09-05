@@ -1,5 +1,5 @@
 import { VerificationStatus, ZkPassport } from '@rarimo/zk-passport'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 
 import { config } from '@/config'
@@ -25,7 +25,7 @@ export default function ProofRequestsDemo() {
   const pollInterval = useRef<number>(-1)
   const [verificationStatus, setVerificationStatus] = useState<VerificationStatus>('not_verified')
 
-  async function checkVerificationStatus() {
+  const checkVerificationStatus = useCallback(async () => {
     try {
       const status = await zkPassport.getVerificationStatus(userId)
       if (status !== 'not_verified') {
@@ -35,7 +35,7 @@ export default function ProofRequestsDemo() {
     } catch (error) {
       console.error(error)
     }
-  }
+  }, [userId])
 
   useEffect(() => {
     if (step === DemoStep.QrCode) {
@@ -48,7 +48,7 @@ export default function ProofRequestsDemo() {
     return () => {
       window.clearInterval(pollInterval.current)
     }
-  }, [step])
+  }, [step, checkVerificationStatus])
 
   switch (step) {
     case DemoStep.Intro:
